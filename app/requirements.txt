@@ -1,0 +1,15 @@
+# ─── FastAPI & Server ────────────────────────────────────────────────────────
+fastapi==0.141.1
+uvicorn[standard]==0.52.4
+
+# ─── OpenTelemetry SDK ───────────────────────────────────────────────────────
+opentelemetry-api==1.44.0
+opentelemetry-sdk==1.44.0
+
+# ─── OTel Instrumentation ────────────────────────────────────────────────────
+opentelemetry-instrumentation-fastapi==0.65b0
+opentelemetry-instrumentation-logging==0.65b0
+
+# ─── OTLP Exporters (gRPC + HTTP) ────────────────────────────────────────────
+opentelemetry-exporter-otlp-proto-grpc==1.44.0
+opentelemetry-exporter-otlp-proto-http==1.44.0

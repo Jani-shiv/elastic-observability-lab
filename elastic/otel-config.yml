@@ -1,0 +1,145 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# OpenTelemetry Collector Configuration
+# Elastic Observability Lab
+#
+# Architecture:
+#   FastAPI App
+#     └─ OTLP gRPC (:4317) / HTTP (:4318)
+#          └─ OTel Collector (this config)
+#               ├─ traces   → elasticsearch index: traces-otel-demo
+#               ├─ metrics  → elasticsearch index: metrics-otel-demo
+#               └─ logs     → elasticsearch index: logs-otel-demo
+#
+# Environment variables consumed (set in docker-compose.yml):
+#   ELASTICSEARCH_URL          e.g. http://elasticsearch:9200
+#   ELASTICSEARCH_USERNAME     e.g. elastic  (or empty string if security disabled)
+#   ELASTICSEARCH_PASSWORD     e.g. changeme (or empty string if security disabled)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Receivers ────────────────────────────────────────────────────────────────
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317   # gRPC – used by the FastAPI app
+      http:
+        endpoint: 0.0.0.0:4318   # HTTP – available for browser/other agents
+
+# ── Processors ───────────────────────────────────────────────────────────────
+processors:
+  # Batch telemetry before exporting — reduces load on Elasticsearch
+  batch:
+    timeout: 5s
+    send_batch_size: 512
+    send_batch_max_size: 1024
+
+  # Enrich spans/logs/metrics with resource attributes from environment
+  resourcedetection:
+    detectors: [env, system]
+    timeout: 5s
+    override: false
+
+  # Add memory limit to prevent OOM
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 256
+    spike_limit_mib: 64
+
+# ── Exporters ─────────────────────────────────────────────────────────────────
+exporters:
+  # ── Traces → Elasticsearch ──────────────────────────────────────────────────
+  elasticsearch/traces:
+    endpoint: ${ELASTICSEARCH_URL}
+    # Credentials — leave empty when xpack.security.enabled=false (local dev default)
+    # Uncomment and set values in .env when security is enabled
+    # user: ${ELASTICSEARCH_USERNAME}
+    # password: ${ELASTICSEARCH_PASSWORD}
+    traces_index: traces-otel-demo
+    # 'otel' mapping mode: preserves native OTel semantics, required for Kibana APM
+    mapping:
+      mode: otel
+    sending_queue:
+      enabled: true
+      num_consumers: 4
+      queue_size: 100
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 120s
+
+  # ── Logs → Elasticsearch ─────────────────────────────────────────────────
+  elasticsearch/logs:
+    endpoint: ${ELASTICSEARCH_URL}
+    # user: ${ELASTICSEARCH_USERNAME}
+    # password: ${ELASTICSEARCH_PASSWORD}
+    logs_index: logs-otel-demo
+    mapping:
+      mode: otel
+    sending_queue:
+      enabled: true
+      num_consumers: 4
+      queue_size: 100
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 120s
+
+  # ── Metrics → Elasticsearch ──────────────────────────────────────────────
+  elasticsearch/metrics:
+    endpoint: ${ELASTICSEARCH_URL}
+    # user: ${ELASTICSEARCH_USERNAME}
+    # password: ${ELASTICSEARCH_PASSWORD}
+    metrics_index: metrics-otel-demo
+    mapping:
+      mode: otel
+    sending_queue:
+      enabled: true
+      num_consumers: 4
+      queue_size: 100
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 120s
+
+  # ── Debug logger — prints telemetry summary to collector stdout ────────────
+  debug:
+    verbosity: basic   # options: basic | normal | detailed
+
+# ── Service Definition ────────────────────────────────────────────────────────
+service:
+  # Internal telemetry of the collector itself
+  # Note: telemetry.metrics.address was removed in OTel Collector 0.128+
+  # Use the readers-based approach for collector self-metrics
+  telemetry:
+    logs:
+      level: info
+    metrics:
+      level: basic
+      readers:
+        - pull:
+            exporter:
+              prometheus:
+                host: 0.0.0.0
+                port: 8888
+
+  pipelines:
+    # ── Traces pipeline ──────────────────────────────────────────────────────
+    traces:
+      receivers:  [otlp]
+      processors: [memory_limiter, resourcedetection, batch]
+      exporters:  [elasticsearch/traces, debug]
+
+    # ── Metrics pipeline ─────────────────────────────────────────────────────
+    metrics:
+      receivers:  [otlp]
+      processors: [memory_limiter, resourcedetection, batch]
+      exporters:  [elasticsearch/metrics, debug]
+
+    # ── Logs pipeline ────────────────────────────────────────────────────────
+    logs:
+      receivers:  [otlp]
+      processors: [memory_limiter, resourcedetection, batch]
+      exporters:  [elasticsearch/logs, debug]
