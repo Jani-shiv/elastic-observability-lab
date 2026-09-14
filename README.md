@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="assets/logo.svg" width="130" alt="Elastic Observability Lab Logo" />
+
 # Elastic Observability Lab — TicketFlow
 
 > **Full-Stack Application Observability Platform with OpenTelemetry, FastAPI and Elastic Stack**

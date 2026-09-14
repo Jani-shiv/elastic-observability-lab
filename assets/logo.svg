@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 220" width="140" height="154">
+  <defs>
+    <!-- Gradient for Top Face -->
+    <linearGradient id="topGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#76899b" />
+      <stop offset="100%" stop-color="#556677" />
+    </linearGradient>
+    <!-- Gradient for Left Face -->
+    <linearGradient id="leftGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#5a6b7c" />
+      <stop offset="100%" stop-color="#42505e" />
+    </linearGradient>
+    <!-- Gradient for Right Face -->
+    <linearGradient id="rightGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#647586" />
+      <stop offset="100%" stop-color="#4b5968" />
+    </linearGradient>
+  </defs>
+
+  <!-- Outer Isometric Cube Shell (Thick Stroke Style) -->
+  <g fill="none" stroke="#5d6f81" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Outer Hexagon Outline -->
+    <path d="M 100 20 L 170 60 L 170 140 L 100 180 L 30 140 L 30 60 Z" />
+    <!-- Inner Y Lines -->
+    <path d="M 100 20 L 100 100" />
+    <path d="M 100 100 L 170 140" />
+    <path d="M 100 100 L 30 140" />
+  </g>
+
+  <!-- Right Face Inner Double Pill Slots -->
+  <g fill="#5d6f81">
+    <rect x="122" y="98" width="10" height="32" rx="5" transform="skewY(-30) rotate(0) translate(-36, 68)" />
+    <rect x="142" y="87" width="10" height="32" rx="5" transform="skewY(-30) rotate(0) translate(-36, 68)" />
+  </g>
+</svg>
