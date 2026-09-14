@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
 # generate-traffic.sh — Normal Traffic Generator
-# Elastic Observability Lab
+# TicketFlow Event Ticketing Platform — Elastic Observability Lab
 #
 # Usage:
 #   chmod +x scripts/generate-traffic.sh
 #   ./scripts/generate-traffic.sh
 #
-# What it does:
-#   Continuously sends requests to all application endpoints.
-#   Generates a steady baseline of telemetry for comparison during incidents.
+# Simulates normal browsing traffic:
+#   - Users browsing event listings
+#   - Users checking specific events
+#   - Users looking up individual tickets
 #
 # Stop with: Ctrl+C
 # ─────────────────────────────────────────────────────────────────────────────
@@ -21,8 +22,9 @@ SLEEP_SECONDS="${SLEEP_SECONDS:-1}"
 REQUEST_COUNT=0
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  Elastic Observability Lab — Traffic Generator"
+echo "  TicketFlow — Normal Traffic Generator"
 echo "  Target: ${BASE_URL}"
+echo "  Simulating: browse events, view tickets"
 echo "  Press Ctrl+C to stop"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
@@ -31,24 +33,30 @@ while true; do
     REQUEST_COUNT=$((REQUEST_COUNT + 1))
     TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 
-    echo "[${TIMESTAMP}] Request #${REQUEST_COUNT}"
+    echo "[${TIMESTAMP}] Session #${REQUEST_COUNT}"
 
-    # Root endpoint
+    # Homepage
     STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${BASE_URL}/")
-    echo "  GET /               → HTTP ${STATUS}"
+    echo "  GET /                     → HTTP ${STATUS}"
 
     # Health check
     STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${BASE_URL}/health")
-    echo "  GET /health         → HTTP ${STATUS}"
+    echo "  GET /health               → HTTP ${STATUS}"
 
-    # List all orders
-    STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${BASE_URL}/api/orders")
-    echo "  GET /api/orders     → HTTP ${STATUS}"
+    # Browse all events (the page most users land on)
+    STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${BASE_URL}/api/events")
+    echo "  GET /api/events           → HTTP ${STATUS}  [event listing]"
 
-    # Individual orders
-    for ORDER_ID in 1 2 3; do
-        STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${BASE_URL}/api/orders/${ORDER_ID}")
-        echo "  GET /api/orders/${ORDER_ID} → HTTP ${STATUS}"
+    # View individual event pages
+    for EVENT_ID in 1 2 3; do
+        STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${BASE_URL}/api/events/${EVENT_ID}")
+        echo "  GET /api/events/${EVENT_ID}       → HTTP ${STATUS}  [event detail]"
+    done
+
+    # Look up individual tickets
+    for TICKET_ID in 101 102 104; do
+        STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${BASE_URL}/api/tickets/${TICKET_ID}")
+        echo "  GET /api/tickets/${TICKET_ID}     → HTTP ${STATUS}  [ticket lookup]"
     done
 
     echo ""
