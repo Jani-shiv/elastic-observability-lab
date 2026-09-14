@@ -105,7 +105,7 @@ services:
     container_name: observability-app
     environment:
       # OTel SDK configuration
-      - OTEL_SERVICE_NAME=${OTEL_SERVICE_NAME:-elastic-observability-demo}
+      - OTEL_SERVICE_NAME=${OTEL_SERVICE_NAME:-ticketflow-api}
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://otel-collector:4317}
       - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
       # Failure simulation — change to "true" to introduce latency
