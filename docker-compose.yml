@@ -101,7 +101,7 @@ services:
     # pull_policy: build tells Docker to always build this image locally
     # and never attempt to pull it from a registry
     pull_policy: build
-    image: elastic-observability-demo:latest
+    image: janishiv/elastic-observability-lab:latest
     container_name: observability-app
     environment:
       # OTel SDK configuration

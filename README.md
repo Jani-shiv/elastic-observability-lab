@@ -20,6 +20,7 @@
 [![Kibana](https://img.shields.io/badge/Kibana-8.19-E01A59?style=for-the-badge&logo=kibana&logoColor=white)](https://elastic.co)
 [![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-0.160-F5A623?style=for-the-badge&logo=opentelemetry&logoColor=white)](https://opentelemetry.io)
 [![Docker Compose](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docs.docker.com)
+[![Docker Hub](https://img.shields.io/badge/Docker_Hub-janishiv%2Felastic--observability--lab-099CEC?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/janishiv/elastic-observability-lab)
 
 </div>
 
