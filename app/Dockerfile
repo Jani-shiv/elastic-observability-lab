@@ -23,6 +23,7 @@ RUN pip install --no-cache-dir --upgrade pip \
 
 # Copy application source
 COPY main.py .
+COPY static ./static
 
 # Own the workdir
 RUN chown -R appuser:appgroup /app

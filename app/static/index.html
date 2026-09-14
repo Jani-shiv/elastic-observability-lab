@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TicketFlow — Google Material Bento & Observability Demo</title>
+  <meta name="description" content="Event ticketing platform instrumented with OpenTelemetry and Elastic Observability with Google Material Bento Box UI." />
+  
+  <!-- Google Fonts: Google Sans / Product Sans style (Plus Jakarta Sans & Roboto Mono) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ─── Google Material Design System & CSS Variables ────────────────────── */
+    :root {
+      /* Google Light Palette */
+      --bg-white: #ffffff;
+      --bg-page: #f8f9fa;
+      --bg-surface: #ffffff;
+      --bg-subtle: #f1f3f4;
+      --bg-hover: #e8eaed;
+
+      /* Google Four Colors */
+      --google-blue: #1a73e8;
+      --google-blue-hover: #1557b0;
+      --google-blue-subtle: #e8f0fe;
+      --google-red: #ea4335;
+      --google-red-subtle: #fce8e6;
+      --google-yellow: #fbbc04;
+      --google-yellow-subtle: #fef7e0;
+      --google-green: #34a853;
+      --google-green-subtle: #e6f4ea;
+
+      /* Google Typography Colors */
+      --text-primary: #202124;
+      --text-secondary: #5f6368;
+      --text-tertiary: #80868b;
+      
+      /* Google Border & Shadows */
+      --border-light: #dadce0;
+      --border-subtle: #e8eaed;
+      --shadow-sm: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+      --shadow-md: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
+      --shadow-lg: 0 4px 12px 0 rgba(60,64,67,0.15), 0 8px 24px 4px rgba(60,64,67,0.15);
+
+      --radius-full: 9999px;
+      --radius-xl: 24px;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+
+      --transition-base: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 24px 24px 80px;
+    }
+
+    /* ─── Incident Alert Bar (Google Alert Style) ─────────────────────── */
+    .incident-banner {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: var(--google-red-subtle);
+      border: 1px solid rgba(234, 67, 53, 0.3);
+      padding: 16px 24px;
+      border-radius: var(--radius-lg);
+      margin-bottom: 24px;
+    }
+    .incident-banner.active {
+      display: flex;
+    }
+    .incident-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .incident-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--google-red);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .incident-text h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #c5221f;
+    }
+    .incident-text p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .incident-badge {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 6px 14px;
+      background: #ffffff;
+      color: #c5221f;
+      border-radius: var(--radius-full);
+      border: 1px solid rgba(234, 67, 53, 0.3);
+    }
+
+    /* ─── Header Navigation (Google Header Style) ───────────────────────── */
+    header.google-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 28px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      margin-bottom: 32px;
+      box-shadow: 0 1px 3px rgba(60,64,67,0.08);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .google-dots {
+      display: flex;
+      gap: 4px;
+    }
+    .g-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .g-dot.b { background: var(--google-blue); }
+    .g-dot.r { background: var(--google-red); }
+    .g-dot.y { background: var(--google-yellow); }
+    .g-dot.g { background: var(--google-green); }
+
+    .brand-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.3px;
+    }
+    .brand-tag {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      background: var(--google-blue-subtle);
+      color: var(--google-blue);
+      margin-left: 6px;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-full);
+      font-size: 0.825rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--google-green);
+    }
+    .status-pill.incident .status-dot {
+      background: var(--google-red);
+    }
+
+    .google-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: var(--radius-full);
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      text-decoration: none;
+      cursor: pointer;
+      transition: var(--transition-base);
+    }
+    .google-btn:hover {
+      background: var(--bg-hover);
+      box-shadow: 0 1px 3px rgba(60,64,67,0.15);
+    }
+    .google-btn.primary {
+      background: var(--google-blue);
+      color: #ffffff;
+      border: none;
+      box-shadow: 0 1px 3px rgba(26,115,232,0.3);
+    }
+    .google-btn.primary:hover {
+      background: var(--google-blue-hover);
+      box-shadow: 0 2px 6px rgba(26,115,232,0.4);
+    }
+
+    /* ─── Bento Box Grid Header / Top Stats ────────────────────────────── */
+    .bento-hero-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    @media (max-width: 1024px) {
+      .bento-hero-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .bento-card.hero-main {
+        grid-column: span 2;
+      }
+    }
+    @media (max-width: 640px) {
+      .bento-hero-grid {
+        grid-template-columns: 1fr;
+      }
+      .bento-card.hero-main {
+        grid-column: span 1;
+      }
+    }
+
+    .bento-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: var(--transition-base);
+      box-shadow: 0 1px 3px rgba(60,64,67,0.06);
+    }
+    .bento-card:hover {
+      border-color: var(--border-light);
+      box-shadow: var(--shadow-md);
+    }
+
+    .bento-card.hero-main {
+      background: linear-gradient(135deg, #ffffff 60%, var(--google-blue-subtle));
+      border: 1px solid rgba(26, 115, 232, 0.2);
+    }
+
+    .bento-card .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .bento-card .card-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-icon-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--bg-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .hero-main h1 {
+      font-size: 1.85rem;
+      font-weight: 800;
+      line-height: 1.25;
+      color: var(--text-primary);
+      margin-bottom: 10px;
+    }
+    .hero-main p {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+      max-width: 90%;
+    }
+
+    .hero-links {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* Metric Numbers */
+    .metric-value {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 8px 0;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .metric-unit {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-tertiary);
+    }
+
+    .metric-bar-wrapper {
+      width: 100%;
+      height: 8px;
+      background: var(--bg-subtle);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      margin-top: 12px;
+    }
+    .metric-bar-fill {
+      height: 100%;
+      width: 35%;
+      background: var(--google-blue);
+      border-radius: var(--radius-full);
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .metric-bar-fill.latency-warn {
+      background: var(--google-red);
+    }
+
+    /* ─── Controls: Search & Category Filter (Google Search Style) ──────── */
+    .controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 280px;
+      position: relative;
+    }
+    .search-box input {
+      width: 100%;
+      padding: 14px 20px 14px 48px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-full);
+      font-size: 0.95rem;
+      color: var(--text-primary);
+      outline: none;
+      box-shadow: 0 1px 3px rgba(60,64,67,0.08);
+      transition: var(--transition-base);
+    }
+    .search-box input::placeholder {
+      color: var(--text-tertiary);
+    }
+    .search-box input:focus {
+      border-color: var(--google-blue);
+      box-shadow: 0 2px 8px rgba(26,115,232,0.25);
+    }
+    .search-icon {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      color: var(--text-tertiary);
+    }
+
+    .category-pills {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+    .cat-pill {
+      padding: 10px 20px;
+      border-radius: var(--radius-full);
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      color: var(--text-secondary);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: var(--transition-base);
+    }
+    .cat-pill:hover {
+      background: var(--bg-subtle);
+      color: var(--text-primary);
+    }
+    .cat-pill.active {
+      background: var(--google-blue-subtle);
+      color: var(--google-blue);
+      border-color: rgba(26, 115, 232, 0.3);
+      font-weight: 700;
+    }
+
+    /* ─── Events Bento Grid Layout ───────────────────────────────────────── */
+    .events-bento-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    @media (max-width: 1024px) {
+      .events-bento-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (max-width: 640px) {
+      .events-bento-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .event-bento-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: var(--transition-base);
+      box-shadow: 0 1px 3px rgba(60,64,67,0.06);
+    }
+    .event-bento-card:hover {
+      border-color: var(--border-light);
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-3px);
+    }
+
+    .event-meta-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .event-category-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      background: var(--bg-subtle);
+      color: var(--text-secondary);
+    }
+
+    .event-availability-tag {
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tag-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .status-on_sale { color: var(--google-green); }
+    .status-on_sale .tag-dot { background: var(--google-green); }
+    .status-almost_sold_out { color: #b06000; }
+    .status-almost_sold_out .tag-dot { background: var(--google-yellow); }
+    .status-sold_out { color: var(--google-red); }
+    .status-sold_out .tag-dot { background: var(--google-red); }
+
+    .event-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      line-height: 1.35;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+
+    .event-details-list {
+      list-style: none;
+      margin-bottom: 20px;
+    }
+    .event-details-list li {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .event-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .price-tag {
+      display: flex;
+      flex-direction: column;
+    }
+    .price-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      font-weight: 600;
+    }
+    .price-amount {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    /* ─── Google Style Modal Popup ───────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(32, 33, 36, 0.4);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition-base);
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .google-modal {
+      width: 100%;
+      max-width: 580px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-xl);
+      padding: 32px;
+      box-shadow: var(--shadow-lg);
+      transform: scale(0.95);
+      transition: var(--transition-base);
+      position: relative;
+    }
+    .modal-overlay.active .google-modal {
+      transform: scale(1);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--bg-subtle);
+      border: none;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+      transition: var(--transition-base);
+    }
+    .modal-close:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .ticket-list {
+      display: grid;
+      gap: 12px;
+      margin: 20px 0;
+      max-height: 240px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .ticket-item {
+      padding: 14px 18px;
+      border-radius: var(--radius-md);
+      background: var(--bg-page);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .ticket-sec {
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    .ticket-seat {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    /* Skeleton Loading State */
+    .skeleton-card {
+      height: 240px;
+      border-radius: var(--radius-xl);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      animation: pulseSkeleton 1.5s infinite alternate;
+    }
+    @keyframes pulseSkeleton {
+      0% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- ─── Incident Warning Banner (Google Alert) ───────────────────── -->
+    <div id="incident-banner" class="incident-banner">
+      <div class="incident-info">
+        <div class="incident-icon">!</div>
+        <div class="incident-text">
+          <h4>LATENCY INCIDENT SIMULATION ACTIVE</h4>
+          <p>The seat-inventory service is experiencing 2–5 second delays (SIMULATE_LATENCY=true).</p>
+        </div>
+      </div>
+      <div class="incident-badge">GET /api/events • ~3500ms</div>
+    </div>
+
+    <!-- ─── Google Material Nav Header ────────────────────────────────── -->
+    <header class="google-nav">
+      <div class="brand">
+        <div class="google-dots">
+          <span class="g-dot b"></span>
+          <span class="g-dot r"></span>
+          <span class="g-dot y"></span>
+          <span class="g-dot g"></span>
+        </div>
+        <span class="brand-title">TicketFlow</span>
+        <span class="brand-tag">Observability Demo</span>
+      </div>
+
+      <div class="nav-actions">
+        <div id="system-status-pill" class="status-pill">
+          <span class="status-dot"></span>
+          <span id="system-status-text">System Healthy</span>
+        </div>
+
+        <a href="http://localhost:5601" target="_blank" class="google-btn">
+          🔍 Kibana APM
+        </a>
+        <a href="http://localhost:8000/docs" target="_blank" class="google-btn">
+          📖 API Docs
+        </a>
+      </div>
+    </header>
+
+    <!-- ─── Hero Bento Grid Section ───────────────────────────────────── -->
+    <section class="bento-hero-grid">
+      <!-- Main Hero Box -->
+      <div class="bento-card hero-main">
+        <div>
+          <div class="card-header">
+            <div class="card-title">
+              <span class="card-icon-badge">⚡</span>
+              Elastic Observability Platform
+            </div>
+            <span style="font-size: 0.75rem; color: var(--text-tertiary); font-weight: 600;">OPENTELEMETRY</span>
+          </div>
+          <h1>Real-Time Event Ticketing & Performance Telemetry</h1>
+          <p>
+            Browse world events, test ticket reservations, and trigger intentional latency bottlenecks to inspect correlated OpenTelemetry traces, metrics, and logs in Elastic.
+          </p>
+        </div>
+
+        <div class="hero-links">
+          <button onclick="triggerTraffic()" class="google-btn primary">
+            ⚡ Send Test Traffic
+          </button>
+          <button onclick="checkHealth()" class="google-btn">
+            🔄 Refresh Health
+          </button>
+        </div>
+      </div>
+
+      <!-- Bento Metric Box 1: Response Time -->
+      <div class="bento-card">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="card-icon-badge">⏱️</span>
+            Backend Latency
+          </div>
+        </div>
+        <div>
+          <div class="metric-value">
+            <span id="latency-val">--</span>
+            <span class="metric-unit">ms</span>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary);" id="latency-desc">
+            Seat inventory sync duration
+          </div>
+        </div>
+        <div class="metric-bar-wrapper">
+          <div id="latency-bar" class="metric-bar-fill" style="width: 15%;"></div>
+        </div>
+      </div>
+
+      <!-- Bento Metric Box 2: Total Active Tickets -->
+      <div class="bento-card">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="card-icon-badge">🎫</span>
+            Available Passes
+          </div>
+        </div>
+        <div>
+          <div class="metric-value">
+            <span id="tickets-val">--</span>
+            <span class="metric-unit">tickets</span>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary);">
+            Across 6 active world events
+          </div>
+        </div>
+        <div class="metric-bar-wrapper">
+          <div id="tickets-bar" class="metric-bar-fill" style="width: 75%;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Controls: Search Bar & Category Filter ────────────────────── -->
+    <section class="controls-row">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="Search events, venues, cities or artists..." oninput="filterEvents()" />
+      </div>
+
+      <div class="category-pills" id="category-pills">
+        <button class="cat-pill active" onclick="setCategory('All', this)">All Events</button>
+        <button class="cat-pill" onclick="setCategory('Concert', this)">Concerts</button>
+        <button class="cat-pill" onclick="setCategory('Sports', this)">Sports</button>
+        <button class="cat-pill" onclick="setCategory('Theatre', this)">Theatre</button>
+        <button class="cat-pill" onclick="setCategory('Motorsport', this)">Motorsport</button>
+      </div>
+    </section>
+
+    <!-- ─── Events Bento Cards Grid ───────────────────────────────────── -->
+    <main id="events-grid" class="events-bento-grid">
+      <!-- Skeleton Loading State -->
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+    </main>
+
+  </div>
+
+  <!-- ─── Google Style Modal Popup ────────────────────────────────────── -->
+  <div id="ticket-modal" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+    <div class="google-modal">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+
+      <div class="event-category-badge" id="modal-category" style="margin-bottom: 12px; display: inline-block;">Category</div>
+      <h2 id="modal-title" style="font-size: 1.4rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">Event Title</h2>
+      <p id="modal-venue" style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 20px;">Venue & City</p>
+
+      <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-tertiary); margin-bottom: 8px;">
+        Available Ticket Passes
+      </div>
+
+      <div id="modal-tickets-list" class="ticket-list">
+        <!-- Loaded dynamically -->
+      </div>
+
+      <div style="display: flex; gap: 12px; margin-top: 24px;">
+        <button id="modal-buy-btn" class="google-btn primary" style="width: 100%; justify-content: center;" onclick="purchasePass()">
+          Reserve Ticket Pass
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── JavaScript App Logic ───────────────────────────────────────── -->
+  <script>
+    let allEvents = [];
+    let currentCategory = 'All';
+    let selectedEventId = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      checkHealth();
+      loadEvents();
+      setInterval(checkHealth, 8000);
+      setInterval(loadEvents, 25000);
+    });
+
+    async function checkHealth() {
+      try {
+        const res = await fetch('/health');
+        const data = await res.json();
+        
+        const banner = document.getElementById('incident-banner');
+        const statusPill = document.getElementById('system-status-pill');
+        const statusText = document.getElementById('system-status-text');
+
+        if (data.simulate_latency) {
+          banner.classList.add('active');
+          statusPill.classList.add('incident');
+          statusText.textContent = 'Incident Active (Latency)';
+        } else {
+          banner.classList.remove('active');
+          statusPill.classList.remove('incident');
+          statusText.textContent = 'System Healthy';
+        }
+      } catch (err) {
+        console.error('Health check failed:', err);
+      }
+    }
+
+    async function loadEvents() {
+      try {
+        const start = performance.now();
+        const res = await fetch('/api/events');
+        const data = await res.json();
+        const elapsed = Math.round(performance.now() - start);
+
+        allEvents = data.events || [];
+        
+        const latencyMs = data.inventory_sync_ms || elapsed;
+        document.getElementById('latency-val').textContent = latencyMs;
+        document.getElementById('tickets-val').textContent = data.total_available_tickets || 0;
+
+        const latencyBar = document.getElementById('latency-bar');
+        if (latencyMs > 1000) {
+          latencyBar.style.width = '95%';
+          latencyBar.classList.add('latency-warn');
+          document.getElementById('latency-desc').textContent = '⚠️ Slow seat sync active';
+        } else {
+          latencyBar.style.width = Math.min(100, Math.max(15, (latencyMs / 300) * 100)) + '%';
+          latencyBar.classList.remove('latency-warn');
+          document.getElementById('latency-desc').textContent = 'Fast in-memory sync';
+        }
+
+        renderEvents();
+      } catch (err) {
+        console.error('Failed to load events:', err);
+        document.getElementById('events-grid').innerHTML = `
+          <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--google-red); background: var(--bg-surface); border-radius: var(--radius-xl); border: 1px solid var(--border-light);">
+            Error connecting to TicketFlow API backend.
+          </div>
+        `;
+      }
+    }
+
+    function renderEvents() {
+      const grid = document.getElementById('events-grid');
+      const query = document.getElementById('search-input').value.toLowerCase();
+
+      const filtered = allEvents.filter(ev => {
+        const matchCat = currentCategory === 'All' || ev.category === currentCategory;
+        const matchSearch = ev.name.toLowerCase().includes(query) || 
+                            ev.venue.toLowerCase().includes(query) || 
+                            ev.city.toLowerCase().includes(query);
+        return matchCat && matchSearch;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1/-1; padding: 60px 20px; text-align: center; color: var(--text-secondary);">
+            No events found matching your search.
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(ev => {
+        const statusClass = `status-${ev.status}`;
+        const statusText = ev.status === 'on_sale' ? 'On Sale' : 
+                          ev.status === 'almost_sold_out' ? 'Almost Sold Out' : 'Sold Out';
+
+        return `
+          <div class="event-bento-card">
+            <div>
+              <div class="event-meta-top">
+                <span class="event-category-badge">${ev.category}</span>
+                <span class="event-availability-tag ${statusClass}">
+                  <span class="tag-dot"></span>
+                  ${statusText}
+                </span>
+              </div>
+
+              <h3 class="event-title">${ev.name}</h3>
+
+              <ul class="event-details-list">
+                <li>📍 ${ev.venue}, ${ev.city}</li>
+                <li>📅 ${formatDate(ev.date)}</li>
+                <li>🎟️ ${ev.available_tickets.toLocaleString()} available / ${ev.total_capacity.toLocaleString()}</li>
+              </ul>
+            </div>
+
+            <div class="event-footer">
+              <div class="price-tag">
+                <span class="price-label">From</span>
+                <span class="price-amount">${ev.currency === 'EUR' ? '€' : ev.currency === 'USD' ? '$' : '£'}${ev.price_from}</span>
+              </div>
+
+              <button onclick="openModal(${ev.event_id})" class="google-btn ${ev.available_tickets > 0 ? 'primary' : ''}" ${ev.available_tickets === 0 ? 'disabled style="opacity: 0.5;"' : ''}>
+                ${ev.available_tickets > 0 ? 'Get Tickets' : 'Sold Out'}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function setCategory(cat, el) {
+      currentCategory = cat;
+      document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+      el.classList.add('active');
+      renderEvents();
+    }
+
+    function filterEvents() {
+      renderEvents();
+    }
+
+    async function openModal(eventId) {
+      selectedEventId = eventId;
+      const modal = document.getElementById('ticket-modal');
+      const ev = allEvents.find(e => e.event_id === eventId);
+
+      if (ev) {
+        document.getElementById('modal-category').textContent = ev.category;
+        document.getElementById('modal-title').textContent = ev.name;
+        document.getElementById('modal-venue').textContent = `📍 ${ev.venue}, ${ev.city} • 📅 ${formatDate(ev.date)}`;
+      }
+
+      document.getElementById('modal-tickets-list').innerHTML = `
+        <div style="padding: 20px; text-align: center; color: var(--text-secondary);">
+          Loading ticket passes...
+        </div>
+      `;
+
+      modal.classList.add('active');
+
+      try {
+        const res = await fetch(`/api/events/${eventId}`);
+        const data = await res.json();
+        
+        const tickets = data.tickets || [];
+        if (tickets.length === 0) {
+          document.getElementById('modal-tickets-list').innerHTML = `
+            <div style="padding: 20px; text-align: center; color: var(--text-secondary);">
+              No individual passes listed.
+            </div>
+          `;
+          return;
+        }
+
+        document.getElementById('modal-tickets-list').innerHTML = tickets.map(t => `
+          <div class="ticket-item">
+            <div>
+              <div class="ticket-sec">${t.section}</div>
+              <div class="ticket-seat">${t.row ? `Row ${t.row}, Seat ${t.seat}` : 'General Admission'}</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-family: 'Roboto Mono'; font-weight: 700; color: var(--google-blue);">
+                ${t.currency === 'EUR' ? '€' : t.currency === 'USD' ? '$' : '£'}${t.price}
+              </div>
+              <span style="font-size: 0.7rem; font-weight: 700; color: ${t.status === 'available' ? 'var(--google-green)' : 'var(--google-yellow)'}">
+                ${t.status.toUpperCase()}
+              </span>
+            </div>
+          </div>
+        `).join('');
+
+      } catch (err) {
+        console.error('Failed to load tickets:', err);
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('ticket-modal').classList.remove('active');
+    }
+
+    function closeModalOnOverlay(e) {
+      if (e.target.id === 'ticket-modal') closeModal();
+    }
+
+    async function purchasePass() {
+      const btn = document.getElementById('modal-buy-btn');
+      btn.innerHTML = 'Reserving...';
+      btn.disabled = true;
+
+      setTimeout(() => {
+        alert('🎉 Ticket Reserved Successfully! OpenTelemetry trace generated.');
+        btn.innerHTML = 'Reserve Ticket Pass';
+        btn.disabled = false;
+        closeModal();
+      }, 700);
+    }
+
+    async function triggerTraffic() {
+      try {
+        await fetch('/api/events');
+        await fetch('/api/events/1');
+        await fetch('/api/tickets/101');
+        alert('⚡ Test traffic sent! Check Kibana APM Traces to inspect spans.');
+        loadEvents();
+      } catch (err) {
+        console.error('Traffic send error:', err);
+      }
+    }
+
+    function formatDate(ds) {
+      try {
+        return new Date(ds).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      } catch { return ds; }
+    }
+  </script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 # ─── FastAPI & Server ────────────────────────────────────────────────────────
 fastapi==0.141.1
 uvicorn[standard]==0.52.4
+aiofiles==24.1.0
 
 # ─── OpenTelemetry SDK ───────────────────────────────────────────────────────
 opentelemetry-api==1.44.0
